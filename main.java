@@ -5,7 +5,7 @@ import java.util.Random;
 import java.util.Queue;
 import java.util.LinkedList;
 //Collaberation between Andrew Earl and
-//hours spent 2.5 (mostly debugging)
+//hours spent 3.5 (mostly debugging)
 public class main
 {
 
