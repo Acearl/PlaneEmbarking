@@ -4,7 +4,7 @@ import java.io.*;
 import java.util.Random;
 import java.util.Queue;
 import java.util.LinkedList;
-//Collaberation between Andrew Earl and
+//Collaberation between Andrew Earl and Gary Ettlemyer
 //hours spent 3.5 (mostly debugging)
 public class main
 {
@@ -74,4 +74,39 @@ public class main
 		System.out.println(strB);
 		System.out.println(str);
 	}
+	
+	public static void loadPlane() {
+		Queue<Integer> totalPassengers = new LinkedList<>(passengerNums);
+        	Queue<Integer> waitingPassengers = new LinkedList<>(passengerWaiting);
+        
+        	int[] remaining = new int[numSeatTypes];
+        	for (int i = 0; i < numSeatTypes; i++) {
+            		remaining[i] = totalPassengers.poll();
+        	}
+        	int[] waiting = new int[numSeatTypes];
+        	for (int i = 0; i < numSeatTypes; i++) {
+            		waiting[i] = waitingPassengers.poll();
+        	}
+        
+        	int[] boarded = new int[numSeatTypes];
+        	int totalBoarded = 0;
+        	Random random = new Random();
+        
+        	System.out.println("Initial state:");
+        	printBoardingStatus(remaining, waiting, boarded);
+
+		//not done
+	}
+	
+	private static void printBoardingStatus(int[] remaining, int[] waiting, int[] boarded) {
+        	String className = "className";
+        	for (int i = 0; i < numSeatTypes; i++) {
+            		if (i == 0) { className = "Economy"; } 
+            		else if (i == 1) { className = "Business"; } 
+            		else if (i == 2) { className = "Luxury"; }
+            		System.out.println("Class: " + className + " " + "[Remaining: " + remaining[i] + "] " + "[Waiting: " + waiting[i] + "] " + "[Boarded: " + boarded[i] + "] ");
+            		//Class: Business [Remaining: x ] [Waiting: x] [Boarded: 10]
+        	}
+        	System.out.println("Total boarded: " + (boarded[0] + boarded[1] + boarded[2]) + "/" + planeSize);
+    	}
 }
