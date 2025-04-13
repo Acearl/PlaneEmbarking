@@ -6,13 +6,13 @@ import java.util.Queue;
 import java.util.LinkedList;
 //Collaboration between Andrew Earl and Gary Ettlemyer
 //hours spent 3.5 (mostly debugging)
-public class Main
+public class main
 {
 
-	static int planeSize = 40; 
+	static int planeSize = 30; 
 	static int numSeatTypes = 3;
 	static Queue<Integer> passengerNums = new LinkedList<>();//tickets sold per class
-	static  Queue<Integer> passengerWaiting = new  LinkedList<>();//current number of people per class waiting in line;
+	static Queue<Integer> passengerWaiting = new  LinkedList<>();//current number of people per class waiting in line;
 	ArrayList<Integer> plane = new ArrayList<>();
 	public static void main(String[] args)
 	{
@@ -26,6 +26,7 @@ public class Main
 		System.out.println(Arrays.toString(passengerWaiting.toArray()));
 		printPassWait();
 		System.out.println(Arrays.toString(passengerNums.toArray()));
+		
 		loadPlane();
 	}
 	public static void genPassengerNums()
@@ -76,105 +77,98 @@ public class Main
 		System.out.println(str);
 	}
 	
-    public static void loadPlane() {
-        Queue<Integer> totalPassengers = new LinkedList<>(passengerNums);
-        Queue<Integer> waitingPassengers = new LinkedList<>(passengerWaiting);
-        
-        int[] remaining = new int[numSeatTypes];
-        int[] waiting = new int[numSeatTypes];
-        
-        //initializing waiting passengers
-        for (int i = 0; i < numSeatTypes; i++) {
-            waiting[i] = waitingPassengers.poll();
-        }
-        
-        //calculate remaining passengers by subtracting waiting
-        //then calculate remaining passengers ensuring total doesn't exceed planeSize
-        int totalWaiting = Arrays.stream(waiting).sum();
-        int remainingCapacity = planeSize - totalWaiting;
-        
-        for (int i = 0; i < numSeatTypes; i++) {
-            int available = totalPassengers.poll();
-            //distribute remaining capacity proportionally
-            remaining[i] = Math.min(available, remainingCapacity);
-            remainingCapacity -= remaining[i];
-            if (remainingCapacity <= 0) break; //full capacity
-        }
-            
-        
-        int[] boarded = new int[numSeatTypes];
-        int totalBoarded = 0;
-        Random random = new Random();
-        
-        System.out.println("Initial state:");
-        printBoardingStatus(remaining, waiting, boarded);
-    
-        while (totalBoarded < planeSize) {
-            //board passengers in priority order (Luxury(2), Business(1), Economy(0))
-            for (int classType = numSeatTypes-1; classType >= 0; classType--) {
-                while (waiting[classType] > 0) {
-                    //board one passenger from this class
-                    waiting[classType]--;
-                    boarded[classType]++;
-                    totalBoarded++;
-
-                    System.out.println("\n[\u2713] Boarded one passenger from class " + getClassName(classType));
-                    printBoardingStatus(remaining, waiting, boarded);
-                    
-                    //Simulate new passengers arriving - 30% chance each cycle
-                    for (int newClass = 0; newClass < numSeatTypes; newClass++) {
-                        if (remaining[newClass] > 0 && random.nextDouble() < 0.3) {
-                            waiting[newClass]++;
-                            remaining[newClass]--;
-                            System.out.println("\n[!] New passenger arrived for class " + getClassName(newClass));
-                        }
-                    }
-                    
-                    if (totalBoarded >= planeSize) {
-                        System.out.println("\nAll passengers have boarded!");
-                        return;
-                    }
-                }
-            }
-            
-            //If no one is waiting, we force arrivals
-            boolean passengersRemain = false;
-            for (int r : remaining) {
-                if (r > 0) {
-                    passengersRemain = true;
-                    break;
-                }
-            }
-            
-            if (passengersRemain) {
-                System.out.println("\nNo passengers waiting, forcing arrivals...");
-                for (int newClass = 0; newClass < numSeatTypes; newClass++) {
-                    if (remaining[newClass] > 0) {
-                        waiting[newClass]++;
-                        remaining[newClass]--;
-                        System.out.println("[!] New passenger arrived for class " + getClassName(newClass));
-                        break;
-                    }
-                }
-            }
-        }
-        System.out.println("\nAll passengers have boarded!");
-    }
-    
-    private static String getClassName(int classType) {
-        if (classType == 0) {return "Economy";}
-        if (classType == 1) {return "Business";}
-        if (classType == 2) {return "Luxury";}
-        else { return "Unknown"; }
-    }
-    
-    private static void printBoardingStatus(int[] remaining, int[] waiting, int[] boarded) {
-        for (int i = numSeatTypes-1; i >= 0; i--) {
-            System.out.println("Class: " + getClassName(i) + 
-                             "\t| Remaining: " + remaining[i] + 
-                             "\t| Waiting: " + waiting[i] + 
-                             "\t| Boarded: " + boarded[i]);
-        }
-        System.out.println("Total boarded: " + (boarded[0] + boarded[1] + boarded[2]) + "/" + planeSize);
-    }
+	public static void loadPlane() {
+	        Queue<Integer> remaining = new LinkedList<>(passengerNums);
+	        Queue<Integer> waiting = new LinkedList<>(passengerWaiting);
+	        Queue<Integer> boarded = new LinkedList<>(Arrays.asList(0, 0, 0));
+	        
+	        //subtract waiting from remaining
+	        for (int i = 0; i < numSeatTypes; i++) {
+	            int waitCount = waiting.poll();
+	            int remainCount = remaining.poll() - waitCount;
+	            waiting.offer(waitCount);
+	            remaining.offer(remainCount);
+	        }
+	           
+	        int totalBoarded = 0;
+	        Random random = new Random();
+	
+	        System.out.println("Initial state:");
+	        printBoardingStatus(remaining, waiting, boarded);
+	      
+	        while (totalBoarded < planeSize) {
+	            
+	            //board one passenger in priority order (Luxury(2), Business(1), Economy(0))
+	            for (int classType = numSeatTypes-1; classType >= 0; classType--) {
+	                if (getQueueValue(waiting, classType) > 0) {
+	                    //board one passenger from this class
+	                    updateQueue(waiting, classType, getQueueValue(waiting, classType) - 1);
+	                    updateQueue(boarded, classType, getQueueValue(boarded, classType) + 1);
+	                    
+	                    totalBoarded++;
+	                  
+	                    System.out.println("\n[\u2713] Boarded one passenger from class " + getClassName(classType));
+	                    printBoardingStatus(remaining, waiting, boarded);
+	                    
+	                    //Simulate new passengers arriving - 30% each cylce
+	                    for (int newClass = numSeatTypes-1; newClass >= 0; newClass--) { //high priority first
+	                        if (getQueueValue(remaining, newClass) > 0 && random.nextDouble() < 0.3) {
+	                            updateQueue(remaining, newClass, getQueueValue(remaining, newClass) - 1);
+	                            updateQueue(waiting, newClass, getQueueValue(waiting, newClass) + 1);
+	                            System.out.println("\n[!] New passenger arrived for class " + getClassName(newClass));
+	                        }
+	                    }
+	                    break;
+	                }
+	            }
+	            	            
+	            //if no one is waiting and passengers remain, we force arrivals
+	            boolean anyWaiting = waiting.stream().anyMatch(count -> count > 0);
+	            boolean passengersRemain = remaining.stream().anyMatch(count -> count > 0);
+	            
+	            if (!anyWaiting && passengersRemain) {
+	                System.out.println("\nNo passengers waiting, forcing arrivals...");
+	                for (int newClass = numSeatTypes-1; newClass >= 0; newClass--) { //high priority first
+	                    if (getQueueValue(remaining, newClass) > 0) {
+	                        updateQueue(remaining, newClass, getQueueValue(remaining, newClass) - 1);
+	                        updateQueue(waiting, newClass, getQueueValue(waiting, newClass) + 1);
+	                        System.out.println("[!] New passenger arrived for class " + getClassName(newClass));
+	                        break;
+	                    }
+	                }
+	            }
+	        }
+	        System.out.println("\nAll passengers have boarded!");
+	}
+		    
+	//method to get value from a queue at specific index
+	private static int getQueueValue(Queue<Integer> queue, int index) {
+		List<Integer> list = new ArrayList<>(queue);
+		return list.get(index);
+	}
+		    
+	//method to update value in a queue at specific index
+	private static void updateQueue(Queue<Integer> queue, int index, int newValue) {
+		List<Integer> list = new ArrayList<>(queue);
+	        list.set(index, newValue);
+	        queue.clear();
+	        queue.addAll(list);
+	}
+		    
+	private static String getClassName(int classType) {
+		if (classType == 0) {return "Economy";}
+	        if (classType == 1) {return "Business";}
+	        if (classType == 2) {return "Luxury";}
+	        else { return "Unknown"; }
+	}
+		    
+	private static void printBoardingStatus(Queue<Integer> remaining, Queue<Integer> waiting, Queue<Integer> boarded) {
+		for (int i = numSeatTypes-1; i >= 0; i--) {
+			System.out.println("Class: " + getClassName(i) + 
+	                            "\t| Remaining: " + getQueueValue(remaining, i) + 
+	                            "\t| Waiting: " + getQueueValue(waiting, i) + 
+	                            "\t| Boarded: " + getQueueValue(boarded, i));
+	        }
+	        System.out.println("Total boarded: " + boarded.stream().mapToInt(Integer::intValue).sum() + "/" + planeSize);
+	}
 }
