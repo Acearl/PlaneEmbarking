@@ -39,7 +39,7 @@ public class main
 		{	
 			
 			System.out.println("leftover: "+leftover);
-			int num = random.nextInt(2, leftover); //makes number of passengers
+			int num = random.nextInt(1, leftover); //makes number of passengers
 			passengerNums.add(num);
 			leftover = leftover - num;
 		}
@@ -55,7 +55,7 @@ public class main
 		{
 			System.out.print("pass peek: " + temp.peek());
 			tempInt = temp.remove();
-			int rand = random.nextInt(1,tempInt);
+			int rand = random.nextInt(1,tempInt+1);
 			passengerWaiting.offer(rand);
 			System.out.println(" i: "+i+" temp: " + tempInt + " rand: " + rand);//Debug
 		}
