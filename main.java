@@ -9,7 +9,7 @@ import java.util.LinkedList;
 public class main
 {
 
-	static int planeSize = 30; 
+	static int planeSize; 
 	static int numSeatTypes = 3;
 	static Queue<Integer> passengerNums = new LinkedList<>();//tickets sold per class
 	static Queue<Integer> passengerWaiting = new  LinkedList<>();//current number of people per class waiting in line;
@@ -18,15 +18,24 @@ public class main
 	{
 
 		//Keep above static at 3 for the number of passenger types
-		System.out.println("test");
+		Scanner scanner = new Scanner(System.in);
+        	System.out.print("Enter plane size (number of seats): ");
+        	planeSize = scanner.nextInt();
+        
+        	System.out.println("Plane size set to: " + planeSize);
 
+        	System.out.println("Generating total number of passengers for each class...");
 		genPassengerNums();
+		
 		System.out.println(Arrays.toString(passengerNums.toArray()));
+		
+		System.out.println("Generating number of current waiting passengers for each class...");
 		genWaiting();
 		System.out.println(Arrays.toString(passengerWaiting.toArray()));
 		printPassWait();
 		System.out.println(Arrays.toString(passengerNums.toArray()));
 		
+		System.out.println("Beginning plane loading process...");
 		loadPlane();
 	}
 	public static void genPassengerNums()
